@@ -22,6 +22,7 @@
     <preference for="Magento\Framework\App\RequestContentInterface" type="Magento\Framework\App\Request\Http" />
     <preference for="Magento\Framework\App\Request\PathInfoProcessorInterface" type="Magento\Store\App\Request\PathInfoProcessor" />
     <preference for="Magento\Framework\App\ResponseInterface" type="Magento\Framework\App\Response\Http" />
+    <preference for="Magento\Framework\App\Response\ForwardInterface" type="Magento\Framework\App\Response\Forward" />
     <preference for="Magento\Framework\App\RouterListInterface" type="Magento\Framework\App\RouterList" />
     <preference for="Magento\Framework\App\FrontControllerInterface" type="Magento\Framework\App\FrontController" />
     <preference for="Magento\Framework\App\CacheInterface" type="Magento\Framework\App\Cache\Proxy" />

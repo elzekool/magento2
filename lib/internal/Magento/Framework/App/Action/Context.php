@@ -5,6 +5,7 @@
  */
 namespace Magento\Framework\App\Action;
 
+use Magento\Framework\App\Response\ForwardInterface;
 use Magento\Framework\Controller\ResultFactory;
 
 /**
@@ -72,6 +73,11 @@ class Context implements \Magento\Framework\ObjectManager\ContextInterface
     protected $resultFactory;
 
     /**
+     * @var ForwardInterface
+     */
+    protected $forward;
+
+    /**
      * @param \Magento\Framework\App\RequestInterface $request
      * @param \Magento\Framework\App\ResponseInterface $response
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
@@ -83,6 +89,7 @@ class Context implements \Magento\Framework\ObjectManager\ContextInterface
      * @param \Magento\Framework\Message\ManagerInterface $messageManager
      * @param \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory
      * @param \Magento\Framework\Controller\ResultFactory $resultFactory
+     * @param ForwardInterface $forward
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -97,7 +104,8 @@ class Context implements \Magento\Framework\ObjectManager\ContextInterface
         \Magento\Framework\App\ViewInterface $view,
         \Magento\Framework\Message\ManagerInterface $messageManager,
         \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory,
-        ResultFactory $resultFactory
+        ResultFactory $resultFactory,
+        ForwardInterface $forward = null
     ) {
         $this->_request = $request;
         $this->_response = $response;
@@ -110,6 +118,8 @@ class Context implements \Magento\Framework\ObjectManager\ContextInterface
         $this->messageManager = $messageManager;
         $this->resultRedirectFactory = $resultRedirectFactory;
         $this->resultFactory = $resultFactory;
+        $this->forward = $forward !== null ? $forward :
+            $this->_objectManager->get(ForwardInterface::class);
     }
 
     /**
@@ -198,5 +208,13 @@ class Context implements \Magento\Framework\ObjectManager\ContextInterface
     public function getResultFactory()
     {
         return $this->resultFactory;
+    }
+
+    /**
+     * @return ForwardInterface
+     */
+    public function getForward()
+    {
+        return $this->forward;
     }
 }

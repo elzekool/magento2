@@ -6,7 +6,9 @@
 
 namespace Magento\Framework\Controller\Result;
 
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Response\ForwardInterface;
 use Magento\Framework\App\Response\HttpInterface as HttpResponseInterface;
 use Magento\Framework\Controller\AbstractResult;
 
@@ -16,6 +18,11 @@ class Forward extends AbstractResult
      * @var \Magento\Framework\App\RequestInterface
      */
     protected $request;
+
+    /**
+     * @var ForwardInterface
+     */
+    protected $forward;
 
     /**
      * @var string
@@ -34,10 +41,16 @@ class Forward extends AbstractResult
 
     /**
      * @param RequestInterface $request
+     * @param ForwardInterface $forward
      */
-    public function __construct(RequestInterface $request)
+    public function __construct(
+        RequestInterface $request,
+        ForwardInterface $forward = null
+    )
     {
         $this->request = $request;
+        $this->forward = $forward !== null ? $forward :
+            ObjectManager::getInstance()->get(ForwardInterface::class);
     }
 
     /**
@@ -76,23 +89,8 @@ class Forward extends AbstractResult
      */
     public function forward($action)
     {
-        $this->request->initForward();
+        $this->forward->forward($action, $this->controller, $this->module, $this->params);
 
-        if (!empty($this->params)) {
-            $this->request->setParams($this->params);
-        }
-
-        if (!empty($this->controller)) {
-            $this->request->setControllerName($this->controller);
-
-            // Module should only be reset if controller has been specified
-            if (!empty($this->module)) {
-                $this->request->setModuleName($this->module);
-            }
-        }
-
-        $this->request->setActionName($action);
-        $this->request->setDispatched(false);
         return $this;
     }
 

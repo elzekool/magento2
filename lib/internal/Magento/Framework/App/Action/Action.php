@@ -6,6 +6,7 @@
 namespace Magento\Framework\App\Action;
 
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Response\ForwardInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\NotFoundException;
@@ -67,6 +68,11 @@ abstract class Action extends AbstractAction
     protected $messageManager;
 
     /**
+     * @var ForwardInterface
+     */
+    protected $forward;
+
+    /**
      * @param Context $context
      */
     public function __construct(Context $context)
@@ -79,6 +85,7 @@ abstract class Action extends AbstractAction
         $this->_redirect = $context->getRedirect();
         $this->_view = $context->getView();
         $this->messageManager = $context->getMessageManager();
+        $this->forward = $context->getForward();
     }
 
     /**
@@ -135,25 +142,7 @@ abstract class Action extends AbstractAction
      */
     protected function _forward($action, $controller = null, $module = null, array $params = null)
     {
-        $request = $this->getRequest();
-
-        $request->initForward();
-
-        if (isset($params)) {
-            $request->setParams($params);
-        }
-
-        if (isset($controller)) {
-            $request->setControllerName($controller);
-
-            // Module should only be reset if controller has been specified
-            if (isset($module)) {
-                $request->setModuleName($module);
-            }
-        }
-
-        $request->setActionName($action);
-        $request->setDispatched(false);
+        $this->forward->forward($action, $controller, $module, $params);
     }
 
     /**
