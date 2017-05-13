@@ -54,6 +54,11 @@ class ActionTest extends \PHPUnit_Framework_TestCase
     protected $pageConfigMock;
 
     /**
+     * @var \Magento\Framework\App\Response\ForwardInterface| \PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $forward;
+
+    /**
      * Full action name
      */
     const FULL_ACTION_NAME = 'module/controller/someaction';
@@ -106,6 +111,8 @@ class ActionTest extends \PHPUnit_Framework_TestCase
         $this->viewMock->expects($this->any())->method('getPage')->will($this->returnValue($this->pageConfigMock));
         $this->pageConfigMock->expects($this->any())->method('getConfig')->will($this->returnValue(1));
 
+        $this->forward = $this->getMock(\Magento\Framework\App\Response\ForwardInterface::class);
+
         $this->objectManagerHelper = new ObjectManagerHelper($this);
         $this->action = $this->objectManagerHelper->getObject(
             \Magento\Framework\App\Test\Unit\Action\ActionFake::class,
@@ -116,6 +123,7 @@ class ActionTest extends \PHPUnit_Framework_TestCase
                 'redirect' => $this->_redirectMock,
                 'actionFlag' => $this->_actionFlagMock,
                 'view' => $this->viewMock,
+                'forward' => $this->forward
             ]
         );
         \Magento\Framework\Profiler::disable();
@@ -148,13 +156,7 @@ class ActionTest extends \PHPUnit_Framework_TestCase
             $this->returnValue(false)
         );
 
-        // _forward expectations
-        $this->_requestMock->expects($this->once())->method('initForward');
-        $this->_requestMock->expects($this->once())->method('setParams')->with(self::$actionParams);
-        $this->_requestMock->expects($this->once())->method('setControllerName')->with(self::CONTROLLER_NAME);
-        $this->_requestMock->expects($this->once())->method('setModuleName')->with(self::MODULE_NAME);
-        $this->_requestMock->expects($this->once())->method('setActionName')->with(self::ACTION_NAME);
-        $this->_requestMock->expects($this->once())->method('setDispatched')->with(false);
+        $this->forward->expects($this->once())->method('forward');
 
         // _redirect expectations
         $this->_redirectMock->expects($this->once())->method('redirect')->with(
