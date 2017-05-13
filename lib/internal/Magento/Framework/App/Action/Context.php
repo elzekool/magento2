@@ -78,6 +78,11 @@ class Context implements \Magento\Framework\ObjectManager\ContextInterface
     protected $forward;
 
     /**
+     * @var DispatcherInterface
+     */
+    protected $dispatcher;
+
+    /**
      * @param \Magento\Framework\App\RequestInterface $request
      * @param \Magento\Framework\App\ResponseInterface $response
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
@@ -105,7 +110,8 @@ class Context implements \Magento\Framework\ObjectManager\ContextInterface
         \Magento\Framework\Message\ManagerInterface $messageManager,
         \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory,
         ResultFactory $resultFactory,
-        ForwardInterface $forward = null
+        ForwardInterface $forward = null,
+        DispatcherInterface $dispatcher = null
     ) {
         $this->_request = $request;
         $this->_response = $response;
@@ -120,6 +126,8 @@ class Context implements \Magento\Framework\ObjectManager\ContextInterface
         $this->resultFactory = $resultFactory;
         $this->forward = $forward !== null ? $forward :
             $this->_objectManager->get(ForwardInterface::class);
+        $this->dispatcher = $dispatcher !== null ? $dispatcher :
+            $this->_objectManager->get(DispatcherInterface::class);
     }
 
     /**
@@ -216,5 +224,13 @@ class Context implements \Magento\Framework\ObjectManager\ContextInterface
     public function getForward()
     {
         return $this->forward;
+    }
+
+    /**
+     * @return DispatcherInterface
+     */
+    public function getDispatcher()
+    {
+        return $this->dispatcher;
     }
 }
