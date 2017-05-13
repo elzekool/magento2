@@ -13,6 +13,7 @@ use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\App\ActionFlag;
+use Magento\Framework\Profiler;
 
 class Dispatcher implements DispatcherInterface
 {
@@ -64,13 +65,13 @@ class Dispatcher implements DispatcherInterface
             'controller_action_predispatch_' . $request->getFullActionName(),
             $eventParameters
         );
-        \Magento\Framework\Profiler::start($profilerKey);
+        Profiler::start($profilerKey);
 
         $result = null;
         if ($request->isDispatched() && !$this->actionFlag->get('', ActionInterface::FLAG_NO_DISPATCH)) {
-            \Magento\Framework\Profiler::start('action_body');
+            Profiler::start('action_body');
             $result = $action->execute();
-            \Magento\Framework\Profiler::start('postdispatch');
+            Profiler::start('postdispatch');
             if (!$this->actionFlag->get('', ActionInterface::FLAG_NO_POST_DISPATCH)) {
                 $this->eventManager->dispatch(
                     'controller_action_postdispatch_' . $request->getFullActionName(),
@@ -82,10 +83,10 @@ class Dispatcher implements DispatcherInterface
                 );
                 $this->eventManager->dispatch('controller_action_postdispatch', $eventParameters);
             }
-            \Magento\Framework\Profiler::stop('postdispatch');
-            \Magento\Framework\Profiler::stop('action_body');
+            Profiler::stop('postdispatch');
+            Profiler::stop('action_body');
         }
-        \Magento\Framework\Profiler::stop($profilerKey);
+        Profiler::stop($profilerKey);
 
         return $result ?: $this->response;
     }
