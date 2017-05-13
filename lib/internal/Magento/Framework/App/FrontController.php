@@ -7,6 +7,8 @@
  */
 namespace Magento\Framework\App;
 
+use Magento\Framework\App\Action\DispatchableInterface;
+
 class FrontController implements FrontControllerInterface
 {
     /**
@@ -51,7 +53,7 @@ class FrontController implements FrontControllerInterface
                     if ($actionInstance) {
                         $request->setDispatched(true);
                         $this->response->setNoCacheHeaders();
-                        if ($actionInstance instanceof \Magento\Framework\App\Action\AbstractAction) {
+                        if ($actionInstance instanceof DispatchableInterface) {
                             $result = $actionInstance->dispatch($request);
                         } else {
                             $result = $actionInstance->execute();
