@@ -22,7 +22,7 @@ use Magento\Framework\Exception\NotFoundException;
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.NumberOfChildren)
  */
-abstract class Action extends AbstractAction implements DispatchableInterface
+abstract class Action extends AbstractAction
 {
     /**
      * @var \Magento\Framework\ObjectManagerInterface
@@ -73,11 +73,6 @@ abstract class Action extends AbstractAction implements DispatchableInterface
     protected $forward;
 
     /**
-     * @var DispatcherInterface
-     */
-    protected $dispatcher;
-
-    /**
      * @param Context $context
      */
     public function __construct(Context $context)
@@ -91,7 +86,6 @@ abstract class Action extends AbstractAction implements DispatchableInterface
         $this->_view = $context->getView();
         $this->messageManager = $context->getMessageManager();
         $this->forward = $context->getForward();
-        $this->dispatcher = $context->getDispatcher();
     }
 
     /**
@@ -103,7 +97,38 @@ abstract class Action extends AbstractAction implements DispatchableInterface
      */
     public function dispatch(RequestInterface $request)
     {
-        return $this->dispatcher->dispatch($request, $this);
+        $this->_request = $request;
+        $profilerKey = 'CONTROLLER_ACTION:' . $request->getFullActionName();
+        $eventParameters = ['controller_action' => $this, 'request' => $request];
+        $this->_eventManager->dispatch('controller_action_predispatch', $eventParameters);
+        $this->_eventManager->dispatch('controller_action_predispatch_' . $request->getRouteName(), $eventParameters);
+        $this->_eventManager->dispatch(
+            'controller_action_predispatch_' . $request->getFullActionName(),
+            $eventParameters
+        );
+        \Magento\Framework\Profiler::start($profilerKey);
+
+        $result = null;
+        if ($request->isDispatched() && !$this->_actionFlag->get('', self::FLAG_NO_DISPATCH)) {
+            \Magento\Framework\Profiler::start('action_body');
+            $result = $this->execute();
+            \Magento\Framework\Profiler::start('postdispatch');
+            if (!$this->_actionFlag->get('', self::FLAG_NO_POST_DISPATCH)) {
+                $this->_eventManager->dispatch(
+                    'controller_action_postdispatch_' . $request->getFullActionName(),
+                    $eventParameters
+                );
+                $this->_eventManager->dispatch(
+                    'controller_action_postdispatch_' . $request->getRouteName(),
+                    $eventParameters
+                );
+                $this->_eventManager->dispatch('controller_action_postdispatch', $eventParameters);
+            }
+            \Magento\Framework\Profiler::stop('postdispatch');
+            \Magento\Framework\Profiler::stop('action_body');
+        }
+        \Magento\Framework\Profiler::stop($profilerKey);
+        return $result ?: $this->_response;
     }
 
     /**
